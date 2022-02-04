@@ -1,15 +1,13 @@
 import { join } from 'path';
 
-export function blogFilename(slug, basePath = '') {
-  if (typeof slug !== 'string') {
+export function dataFilename(title, basePath = '') {
+  if(typeof(title) !== 'string' || title === '')
     return null;
-  }
 
-  if (slug === '') {
-    return null;
-  }
+  if(title.includes('.html'))
+    return join(basePath, `${title}`);
 
-  const filename = join(basePath, `${slug}.html`);
+  const filename = join(basePath, `${title}.html`);
 
   return filename;
 }

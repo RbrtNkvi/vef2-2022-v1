@@ -1,50 +1,57 @@
 /* eslint-disable no-await-in-loop */
-import { mkdir, readdir, readFile, stat, writeFile } from 'fs/promises';
+import { mkdir, readdir, readFile, writeFile } from 'fs/promises';
 import { join } from 'path';
+import { calculate } from './calculate.js';
 import { direxists } from './lib/file.js';
-import { blogFilename } from './lib/utils.js';
-import { blogTemplate, makeHTML, makeIndex } from './make-html.js';
+import { dataFilename } from './lib/utils.js';
+import { makeIndex, statsTemplate } from './make-html.js';
 import { parse } from './parser.js';
 
-const BLOG_DIR = './blog';
+const DATA_DIR = './data';
 const OUTPUT_DIR = './dist';
 
 async function main() {
-  const files = await readdir(BLOG_DIR);
+  const files = await readdir(DATA_DIR);
 
   if (!(await direxists(OUTPUT_DIR))) {
     await mkdir(OUTPUT_DIR);
   }
 
-  const blogs = [];
+  const datas = [];
 
   for (const file of files) {
-    const path = join(BLOG_DIR, file);
+    const path = join(DATA_DIR, file);
+    /*
     const info = await stat(path);
 
     if (info.isDirectory()) {
       // eslint-disable-next-line no-continue
       continue;
     }
+    */
 
     const data = await readFile(path);
     const str = data.toString('utf-8');
 
     const parsed = parse(str);
 
-    const html = makeHTML(parsed);
-    const blog = blogTemplate(parsed.metadata.title, html, true);
-    const filename = blogFilename(parsed.metadata.slug, OUTPUT_DIR);
+    const stats = calculate(parsed)
 
-    if (filename) {
-      await writeFile(filename, blog, { flag: 'w+' });
-      blogs.push(parsed.metadata);
-    } else {
-      console.warn('missing slug for md file', path);
+    const result = {
+      parsed,
+      stats,
+      title: file,
     }
+
+    const template = statsTemplate(result);
+
+    const filename = dataFilename(result.title, OUTPUT_DIR);
+
+    await writeFile(filename, template, { flag: 'w+' });
+    datas.push(result);
   }
 
-  const index = blogTemplate('Bloggið mitt!', makeIndex(blogs));
+  const index = makeIndex('Gagnavinnsla', datas);
   await writeFile(join(OUTPUT_DIR, 'index.html'), index, { flag: 'w+' });
 }
 

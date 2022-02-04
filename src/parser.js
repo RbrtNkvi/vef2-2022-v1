@@ -1,34 +1,33 @@
-import matter from 'gray-matter';
-import { marked } from 'marked';
-
+/* eslint-disable no-restricted-globals */
 /**
- * Parse markdown string with frontmatter
- * @param {string} input Input markdown string
- * @returns {object} Parsed markdown with frontmatter metadata
+ * Parse data text
+ * @param {string} input Input data string
+ * @returns {object} Parsed data
  */
 export function parse(input) {
-  const { content, data } = matter(input);
-
-  const { title, slug, date } = data;
-
-  const parsed = marked.parse(content);
-
-  const metadata = {};
-
-  if (title) {
-    metadata.title = title;
+  const data = input.split('\n');
+  const parsed = [];
+  for (let i = 0; i < data.length; i++) {
+    if (!isNaN(Number(data[i]))) {
+      if(data[i] === '' || data[i] === '\n' || data[i].trim().length === 0)
+        parsed[i] = '';
+      else
+        parsed[i] = Number(data[i]);
+    } else if (!isNaN(Number((data[i].replace(/\./g, '').replace(/,/g, '.'))))) {
+      parsed[i] = Number(data[i].replace(/\./g, '').replace(/,/g, '.'))
+    } else {
+      parsed[i] = '';
+    }
   }
 
-  if (slug) {
-    metadata.slug = slug;
+  const d = [];
+  let j = 0;
+  for (let i = 0; i < parsed.length; i++) {
+    if (parsed[i] !== '') {
+      d[j] = parsed[i];
+      j++;
+    }
   }
 
-  if (date) {
-    metadata.date = date;
-  }
-
-  return {
-    content: parsed,
-    metadata,
-  };
+  return d;
 }

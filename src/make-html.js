@@ -1,43 +1,55 @@
-export function makeHTML(entry) {
-  const html = entry.content;
-  const { date } = entry.metadata;
+import { dataFilename } from './lib/utils.js';
 
-  const template = `
-    <section>
-      ${html}
-      <p>Skrifað: ${date}</p>
-    </section>
-  `;
+const OUTPUT_DIR = './dist';
 
-  return template;
-}
-
-export function makeIndex(entries) {
+export function makeIndex(title, entries) {
   let list = '';
+
   for (const entry of entries) {
-    const { slug, title } = entry;
-    const link = `<li><a href="${`${slug}.html`}">${title}</a></li>`;
+    const filename = dataFilename(entry.title, OUTPUT_DIR);
+    const link = `<li><a href="${`${filename}`}">${entry.title}</a></li>`;
     list += link;
   }
-
-  return `<ul>${list}</ul>`;
-}
-
-/**
- * Takes HTML for a single blog entry and returns it with the site template.
- */
-export function blogTemplate(title, blog, showBack = false) {
-  const back = showBack ? '<p><a href="/">Til baka</a></p>' : '';
   return `
   <!doctype html>
   <html>
     <head>
-      <title>${title ?? ''}</title>
+      <title>${title}</title>
       <link rel="stylesheet" href="styles.css">
     </head>
     <body>
-      ${blog ?? ''}
-      ${back}
+      <ul>${list}</ul>
+    </body>
+  </html>`;
+}
+
+/**
+ * Takes HTML for a single datafile and returns it with the site template.
+ */
+export function statsTemplate(result) {
+  const arr = [];
+  let j = 0;
+  if (result.stats !== null) {
+    for (const key in result.stats) {
+      if (key) {
+        arr[j] = `${key}: ${result.stats[key]}`;
+        j++;
+      }
+    }
+  }
+  return `
+  <!doctype html>
+  <html>
+    <head>
+      <title>${result.title ?? ''}</title>
+      <link rel="stylesheet" href="styles.css">
+    </head>
+    <body>
+      <div class="data">
+        <p>${result.stats !== null ? result.parsed.map(num => `${num}`).join(', ') : 'Engin gögn.'}</p>
+      </div>
+      <div class="stats">${result.stats !== null ? arr.map(str => `<p>${str}</p>`).join('') : ''} </div>
+      <p><a href="/">Til baka</a></p>
     </body>
   </html>`;
 }

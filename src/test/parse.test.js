@@ -2,63 +2,68 @@ import { describe, expect, it } from '@jest/globals';
 import { parse } from '../parser';
 
 describe('parser', () => {
-  it('parses a markdown file', () => {
-    const input = '# hello world';
+  it('parses regular numbers', () => {
+    const input = `123
+    -345`;
 
     const parsed = parse(input);
 
-    expect(parsed.content).toBe('<h1 id="hello-world">hello world</h1>\n');
+    expect(parsed).toStrictEqual([123, -345]);
   });
 
-  it('parses a markdown file 2', () => {
-    const input = '# hello world!';
+  it('parses a comment and plain text', () => {
+    const input = `# hello world!
+    hæ`;
 
     const parsed = parse(input);
 
-    expect(parsed.content).toBe('<h1 id="hello-world">hello world!</h1>\n');
+    expect(parsed).toStrictEqual([]);
   });
 
-  it('parses a markdown file 3', () => {
-    const input = `---
-title: title
-slug: xxx
----`;
+  it('parses mixed data', () => {
+    const input = `123aa22
+    111
+    aaaaa`;
 
     const parsed = parse(input);
 
-    expect(parsed.content).toBe('');
-    expect(parsed.metadata.title).toBe('title');
+    expect(parsed).toStrictEqual([111]);
   });
 
-  it.skip('parses a markdown file 4', () => {
-    const input = `---
-date: some-date
----`;
+  it('parses number with the form x.xxx,xxx, x.xxx.xxx,x and x,xx', () => {
+    const input = `1.234,567
+1.111.111,1
+9,87`;
 
     const parsed = parse(input);
 
-    expect(parsed.content).toBe('');
-    expect(parsed.metadata.title).toBe('title');
+    expect(parsed).toStrictEqual([1234.567, 1111111.1, 9.87]);
   });
 
-  it('should always have at least a slug', () => {
-    const input = `---
-slug: foo
----`;
+  it('parses scientific notation', () => {
+    const input = '6.4e3';
 
     const parsed = parse(input);
 
-    expect(parsed.content).toBe('');
-    expect(parsed.metadata.slug).toBe('foo');
+    expect(parsed).toStrictEqual([6400]);
   });
 
-  it('should not return a metadata key that is not included in the frontmatter', () => {
-    const input = `---
----`;
+  it('parses empty string', () => {
+    const input = '';
 
     const parsed = parse(input);
 
-    expect(parsed.content).toBe('');
-    expect('slug' in parsed.metadata).toBe(false);
+    expect(parsed).toStrictEqual([]);
+  });
+
+  it('parses newline and whitespace', () => {
+    const input = `0
+
+
+    `;
+
+    const parsed = parse(input);
+
+    expect(parsed).toStrictEqual([0]);
   });
 });
