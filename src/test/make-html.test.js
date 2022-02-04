@@ -66,7 +66,7 @@ describe('html', () => {
       <link rel="stylesheet" href="styles.css">
     </head>
     <body>
-      <ul><li><a href="dist\\1.html">1</a></li><li><a href="dist\\2.html">2</a></li></ul>
+      <ul><li><a href="1.html">1</a></li><li><a href="2.html">2</a></li></ul>
     </body>
   </html>`;
     expect(parsed).toBe(output);

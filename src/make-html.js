@@ -1,12 +1,10 @@
 import { dataFilename } from './lib/utils.js';
 
-const OUTPUT_DIR = './dist';
-
 export function makeIndex(title, entries) {
   let list = '';
 
   for (const entry of entries) {
-    const filename = dataFilename(entry.title, OUTPUT_DIR);
+    const filename = dataFilename(entry.title);
     const link = `<li><a href="${`${filename}`}">${entry.title}</a></li>`;
     list += link;
   }
